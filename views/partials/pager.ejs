@@ -1,0 +1,4 @@
+<% const base = '?' + (pg.qs ? pg.qs + '&' : ''); %>
+<div class="pager"><span><%= pg.total %> resultados · página <%= pg.p %> de <%= pg.paginas %></span>
+<% if (pg.p > 1) { %><a class="btn gris" href="<%= base %>p=<%= pg.p - 1 %>">← Anterior</a><% } %>
+<% if (pg.p < pg.paginas) { %><a class="btn" href="<%= base %>p=<%= pg.p + 1 %>">Siguiente →</a><% } %></div>

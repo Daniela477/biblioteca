@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ingresar · Biblioteca</title><link rel="stylesheet" href="/style.css"></head><body class="login-body">
+<div class="login-wrap">
+  <section class="hero">
+    <div class="shelf"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <h1>Biblioteca<br>Comfenalco</h1>
+    <p>Gestiona libros, socios y préstamos en un solo lugar.</p>
+  </section>
+  <section class="login-card">
+    <h2>Bienvenido 👋</h2><p class="muted">Ingresa con tu cuenta de bibliotecario</p>
+    <% if (error) { %><div class="err"><%= error %></div><% } %>
+    <form method="post" action="/login" class="campos">
+      <label>Correo</label><input type="email" name="email" placeholder="admin@biblioteca.com" required autofocus>
+      <label>Contraseña</label><input type="password" name="password" placeholder="••••••••" required>
+      <p><button class="full">Ingresar</button></p>
+    </form>
+  </section>
+</div>
+<%- include('partials/efectos') %>
+</body></html>

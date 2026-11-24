@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+<h1>Reportes</h1><p class="muted">Consultas de agregación sobre la colección de préstamos</p>
+<form class="barra no-print" method="get" action="/reportes">
+  <label>Año <input type="number" name="anio" min="2000" max="2100" value="<%= filtros.anio %>" placeholder="Ej. 2026"></label>
+  <label>Desde <input type="date" name="desde" value="<%= filtros.desde %>"></label>
+  <label>Hasta <input type="date" name="hasta" value="<%= filtros.hasta %>"></label>
+  <button>Aplicar filtros</button><a class="btn gris" href="/reportes">Limpiar</a>
+  <a class="btn gris" href="/reportes/exportar.csv?<%= new URLSearchParams(filtros) %>">Exportar CSV</a>
+  <a class="btn" target="_blank" href="/reportes/pdf?<%= new URLSearchParams(filtros) %>">Exportar PDF</a>
+</form>
+<% if (filtros.desde && filtros.hasta && filtros.desde > filtros.hasta) { %><div class="err">La fecha inicial no puede ser posterior a la fecha final.</div><% } %>
+<div class="charts">
+  <div class="card"><h3>Préstamos por categoría</h3><div class="cv"><canvas id="c1"></canvas></div></div>
+  <div class="card"><h3>Top 5 libros más prestados</h3><div class="cv"><canvas id="c2"></canvas></div></div>
+  <div class="card"><h3>Multa total por ciudad</h3><div class="cv"><canvas id="c3"></canvas></div></div>
+  <div class="card"><h3>Préstamos por mes</h3><div class="cv"><canvas id="c4"></canvas></div></div>
+</div>
+<h2>Detalle de los datos</h2>
+<% if (!porCategoria.length && !topLibros.length && !multasPorCiudad.length && !porMes.length) { %><div class="card muted">No hay resultados para el período seleccionado.</div><% } %>
+<% if (porCategoria.length) { %><table><tr><th>Categoría</th><th>Préstamos</th><th>Libros distintos</th></tr><% porCategoria.forEach(r => { %><tr><td><%= r.categoria %></td><td><%= r.total_prestamos %></td><td><%= r.libros_distintos %></td></tr><% }) %></table><% } %>
+<% if (topLibros.length) { %><table><tr><th>#</th><th>Título</th><th>Categoría</th><th>Veces prestado</th></tr><% topLibros.forEach((r, i) => { %><tr><td><%= i + 1 %></td><td><%= r.titulo %></td><td><%= r.categoria %></td><td><%= r.veces %></td></tr><% }) %></table><% } %>
+<% if (multasPorCiudad.length) { %><table><tr><th>Ciudad</th><th>Devueltos</th><th>Multa promedio</th><th>Multa total</th></tr><% multasPorCiudad.forEach(r => { %><tr><td><%= r.ciudad %></td><td><%= r.prestamos %></td><td>$<%= r.multa_promedio %></td><td>$<%= r.multa_total %></td></tr><% }) %></table><% } %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><script>
+const col=['#4f46e5','#f59e0b','#10b981','#ec4899','#06b6d4','#8b5cf6','#ef4444','#84cc16'];
+const g=(id,type,labels,data,label,extra={})=>{const el=document.getElementById(id);if(el)new Chart(el,{type,data:{labels,datasets:[{label,data,backgroundColor:col,borderColor:'#4f46e5',tension:.35,fill:type==='line'}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},...extra}})};
+<% const J=o=>JSON.stringify(o).replace(/</g,'\\u003c'); %>
+g('c1','bar',<%- J(porCategoria.map(r=>r.categoria)) %>,<%- J(porCategoria.map(r=>r.total_prestamos)) %>,'Préstamos');
+g('c2','bar',<%- J(topLibros.map(r=>r.titulo)) %>,<%- J(topLibros.map(r=>r.veces)) %>,'Veces',{indexAxis:'y'});
+g('c3','bar',<%- J(multasPorCiudad.map(r=>r.ciudad)) %>,<%- J(multasPorCiudad.map(r=>r.multa_total)) %>,'Multa total');
+g('c4','line',<%- J(porMes.map(r=>r.mes)) %>,<%- J(porMes.map(r=>r.prestamos)) %>,'Préstamos');
+<% if (imprimir) { %>window.addEventListener('load',()=>setTimeout(()=>window.print(),500));<% } %>
+</script><style>@media print{.no-print,header.top,footer{display:none!important}body{background:#fff!important;color:#111!important}.card,table{break-inside:avoid}.cv{height:220px}}</style>
+<%- include('partials/footer') %>

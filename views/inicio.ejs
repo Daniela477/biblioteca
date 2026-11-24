@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+<div class="welcome"><h1>Hola, <%= usuario.nombre %> 👋</h1><p>Resumen de tu biblioteca</p></div>
+<div class="stats">
+  <a class="stat" href="/libros"><span>📖</span><b><%= libros %></b><small>Libros en catálogo</small></a>
+  <a class="stat" href="/socios"><span>👥</span><b><%= socios %></b><small>Socios registrados</small></a>
+  <a class="stat" href="/prestamos?estado=activo"><span>🔄</span><b><%= activos %></b><small>Préstamos activos</small></a>
+  <a class="stat <%= vencidos ? 'alerta' : '' %>" href="/prestamos?estado=activo"><span>⏰</span><b><%= vencidos %></b><small>Préstamos vencidos</small></a>
+  <a class="stat" href="/libros"><span>📚</span><b><%= disponibles %></b><small>Ejemplares disponibles</small></a>
+  <a class="stat" href="/prestamos?estado=devuelto"><span>↩️</span><b><%= devueltos %></b><small>Préstamos devueltos</small></a>
+  <a class="stat" href="/reportes"><span>💰</span><b>$<%= multas.toLocaleString('es-CO') %></b><small>Multas acumuladas</small></a>
+</div>
+
+<% if (!recientes.length) { %><div class="card muted">Todavía no hay préstamos registrados.</div><% } %>
+<% if (porVencer.length) { %><div class="card alerta-card"><h3>⏳ Vencen en los próximos 3 días</h3>
+<% porVencer.forEach(p => { %><div class="fila"><span><b><%= p.libro.titulo %></b> — <%= p.socio.nombre %></span><span class="pill activo">vence <%= fmt(p.fecha_limite) %></span></div><% }) %></div><% } %>
+<h2>Préstamos por mes</h2>
+<div class="card"><div class="cv"><canvas id="cm"></canvas></div></div>
+<h2>Últimos préstamos</h2>
+<table><tr><th>Libro</th><th>Socio</th><th>Fecha</th><th>Estado</th></tr>
+<% recientes.forEach(p => { %><tr><td><%= p.libro.titulo %></td><td><%= p.socio.nombre %></td><td><%= fmt(p.fecha_prestamo) %></td>
+<td><span class="pill <%= p.estado %>"><%= p.estado %></span></td></tr><% }) %></table>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('cm'), { type: 'line',
+  data: { labels: <%- JSON.stringify(porMes.map(r => r.mes)) %>, datasets: [{ label: 'Préstamos', data: <%- JSON.stringify(porMes.map(r => r.prestamos)) %>, borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,.15)', fill: true, tension: .35 }] },
+  options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+</script>
+<%- include('partials/footer') %>

@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+<h1><%= socio.nombre %></h1>
+<p class="muted" style="text-align:center"><%= socio.tipo %> · <%= socio.email %> · Doc. <%= socio.documento %> · <%= socio.direccion.calle || '' %>, <%= socio.direccion.ciudad %> · Socio desde <%= fmt(socio.fecha_registro) %></p>
+<div class="stats">
+  <div class="stat"><span>📚</span><b><%= r.total %></b><small>Préstamos en total</small></div>
+  <div class="stat"><span>🔄</span><b><%= r.activos %></b><small>Activos ahora</small></div>
+  <div class="stat"><span>💰</span><b>$<%= r.multas %></b><small>Multas acumuladas</small></div>
+</div>
+<div class="acciones"><a class="btn gris" href="/socios/<%= socio._id %>/editar">Editar</a><a class="btn gris" href="/socios">Volver</a></div>
+<h2>Historial de préstamos</h2>
+<table><tr><th>Libro</th><th>Préstamo</th><th>Límite</th><th>Devolución</th><th>Estado</th><th>Multa</th></tr>
+<% historial.forEach(p => { %><tr><td><a href="/libros/<%= p.libro._id %>"><%= p.libro.titulo %></a></td><td><%= fmt(p.fecha_prestamo) %></td><td><%= fmt(p.fecha_limite) %></td><td><%= fmt(p.fecha_devolucion) %></td>
+<td><span class="pill <%= p.estado %>"><%= p.estado %></span></td><td>$<%= p.multa || 0 %></td></tr><% }) %>
+<% if (!historial.length) { %><tr><td colspan="6">Este socio aún no tiene préstamos</td></tr><% } %></table>
+<%- include('../partials/footer') %>

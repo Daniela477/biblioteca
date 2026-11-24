@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+<h1>Búsqueda</h1>
+<form class="barra" action="/buscar"><input name="q" value="<%= q %>" placeholder="Título, autor, ISBN, nombre o documento" autofocus size="40"><button>Buscar</button></form>
+<% if (q) { %>
+<div class="dosc">
+  <div class="card"><h3>📖 Libros (<%= libros.length %>)</h3>
+    <% libros.forEach(l => { %><div class="fila"><a href="/libros/<%= l._id %>"><%= l.titulo %></a><span class="muted"><%= l.autores.join(', ') %></span></div><% }) %>
+    <% if (!libros.length) { %><p class="muted">Sin libros</p><% } %></div>
+  <div class="card"><h3>👥 Socios (<%= socios.length %>)</h3>
+    <% socios.forEach(s => { %><div class="fila"><a href="/socios/<%= s._id %>"><%= s.nombre %></a><span class="muted"><%= s.documento %></span></div><% }) %>
+    <% if (!socios.length) { %><p class="muted">Sin socios</p><% } %></div>
+</div>
+<% } %>
+<%- include('partials/footer') %>

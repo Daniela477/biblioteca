@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Biblioteca</title><link rel="stylesheet" href="/style.css">
+<script>document.documentElement.dataset.tema=localStorage.getItem('tema')||''</script></head><body class="<%= ruta.startsWith('/admin') ? 'modo-admin' : '' %>">
+<header class="top"><div class="top-in">
+  <a class="brand" href="/"><span class="logo">📚</span>Biblioteca</a>
+  <nav>
+    <a href="/" class="<%= ruta === '/' ? 'on' : '' %>">Inicio</a>
+    <a href="/libros" class="<%= ruta.startsWith('/libros') ? 'on' : '' %>">Libros</a>
+    <a href="/socios" class="<%= ruta.startsWith('/socios') ? 'on' : '' %>">Socios</a>
+    <a href="/prestamos" class="<%= ruta.startsWith('/prestamos') ? 'on' : '' %>">Préstamos</a>
+    <a href="/reportes" class="<%= ruta.startsWith('/reportes') ? 'on' : '' %>">Reportes</a>
+    <% if (usuario && usuario.rol === 'admin') { %><a href="/admin" class="<%= ruta.startsWith('/admin') ? 'on' : '' %>">Admin</a><% } %>
+  </nav>
+  <form class="buscador" action="/buscar"><input name="q" placeholder="🔍 Buscar libros o socios…"></form>
+  <button type="button" class="gris" title="Modo oscuro" onclick="const t=document.documentElement.dataset.tema==='dark'?'':'dark';document.documentElement.dataset.tema=t;localStorage.setItem('tema',t)">🌓</button>
+  <% if (usuario) { %><form method="post" action="/logout" class="user"><span class="avatar"><%= usuario.nombre[0] %></span><span class="quien"><b><%= usuario.nombre %></b><small><%= usuario.rol || 'usuario' %></small></span><button class="gris">Salir</button></form><% } %>
+</div></header>
+<main>
+<% if (ok) { %><div class="ok"><%= ok %></div><% } %>
+<% if (error) { %><div class="err"><%= error %></div><% } %>

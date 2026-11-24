@@ -1,0 +1,27 @@
+<%- include('../partials/header') %>
+<h1><%= titulo %></h1>
+<% errores.forEach(e => { %><div class="err"><%= e %></div><% }) %>
+<form class="campos" method="post" action="<%= action %>">
+  <label>Nombre completo</label><input name="nombre" value="<%= socio.nombre || '' %>" required>
+  <label>Documento</label><input name="documento" value="<%= socio.documento || '' %>" required>
+  <div class="aviso" id="doc-aviso" hidden></div>
+  <label>Correo</label><input type="email" name="email" value="<%= socio.email || '' %>" required>
+  <label>Tipo</label>
+  <select name="tipo"><% tipos.forEach(t => { %><option <%= t === socio.tipo ? 'selected' : '' %>><%= t %></option><% }) %></select>
+  <label>Calle</label><input name="calle" value="<%= (socio.direccion || {}).calle || '' %>">
+  <label>Ciudad</label>
+  <select name="ciudad"><% ciudades.forEach(c => { %><option <%= c === (socio.direccion || {}).ciudad ? 'selected' : '' %>><%= c %></option><% }) %></select>
+  <p><button>Guardar</button> <a class="btn gris" href="/socios">Cancelar</a></p>
+</form>
+<% if (action === '/socios') { %><script>
+const d = document.querySelector('[name=documento]'), a = document.getElementById('doc-aviso');
+d.addEventListener('blur', async () => {
+  a.hidden = true;
+  if (!/^\d{6,12}$/.test(d.value.trim())) return;
+  const r = await (await fetch('/api/socios?doc=' + encodeURIComponent(d.value.trim()))).json();
+  if (!r.length) return;
+  a.hidden = false; a.textContent = 'Este documento ya está registrado a nombre de ' + r[0].nombre + '. ';
+  const l = document.createElement('a'); l.href = '/socios/' + r[0]._id; l.textContent = 'Ver perfil'; a.append(l);
+});
+</script><% } %>
+<%- include('../partials/footer') %>

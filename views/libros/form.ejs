@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+<h1><%= titulo %></h1>
+<% errores.forEach(e => { %><div class="err"><%= e %></div><% }) %>
+<form class="campos" method="post" action="<%= action %>">
+  <label>Título</label><input name="titulo" value="<%= libro.titulo || '' %>" required>
+  <label>ISBN</label><input name="isbn" value="<%= libro.isbn || '' %>" required>
+  <label>Autores (separados por coma)</label><input name="autores" value="<%= (libro.autores || []).join(', ') %>" required>
+  <label>Categoría</label>
+  <select name="categoria"><% categorias.forEach(c => { %><option <%= c === libro.categoria ? 'selected' : '' %>><%= c %></option><% }) %></select>
+  <label>Etiquetas (separadas por coma)</label><input name="etiquetas" value="<%= (libro.etiquetas || []).join(', ') %>">
+  <label>Editorial</label><input name="editorial_nombre" list="editoriales" autocomplete="off" value="<%= (libro.editorial || {}).nombre || '' %>" required>
+  <datalist id="editoriales"></datalist>
+  <label>País de la editorial</label><input name="editorial_pais" value="<%= (libro.editorial || {}).pais || '' %>">
+  <label>Año</label><input type="number" name="anio" value="<%= libro.anio || '' %>" required>
+  <label>URL de la portada (opcional)</label><input name="portada" value="<%= libro.portada || '' %>" placeholder="https://…">
+  <label>Copias totales</label><input type="number" name="copias_total" min="1" value="<%= libro.copias_total || 1 %>" required>
+  <p><button>Guardar</button> <a class="btn gris" href="/libros">Cancelar</a></p>
+</form>
+<script>
+fetch('/api/editoriales').then(r => r.json()).then(es => {
+  const dl = document.getElementById('editoriales'), n = document.querySelector('[name=editorial_nombre]'), p = document.querySelector('[name=editorial_pais]');
+  es.forEach(e => { const o = document.createElement('option'); o.value = e.nombre; dl.append(o); });
+  n.addEventListener('change', () => {
+    const e = es.find(x => x.nombre.toLowerCase() === n.value.trim().toLowerCase());
+    if (e && !p.value) p.value = e.pais || '';
+  });
+});
+</script>
+<%- include('../partials/footer') %>

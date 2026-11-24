@@ -1,0 +1,42 @@
+<%- include('../partials/header') %>
+<h1><%= libro.titulo %></h1>
+<% if (libro.portada) { %><p style="text-align:center"><img class="portada" src="<%= libro.portada %>" alt="Portada"></p><% } %>
+<div class="card">
+  <p><b>ISBN:</b> <%= libro.isbn %> · <b>Año:</b> <%= libro.anio %> · <b>Categoría:</b> <%= libro.categoria %></p>
+  <p><b>Autores:</b> <%= libro.autores.join(', ') %></p>
+  <p><b>Editorial:</b> <%= libro.editorial.nombre %> (<%= libro.editorial.pais || 's/d' %>)</p>
+  <p><b>Copias:</b> <%= libro.copias_disponibles %> disponibles de <%= libro.copias_total %></p>
+  <p><b>Etiquetas:</b>
+    <% (libro.etiquetas || []).forEach(t => { %>
+      <span class="tag"><%= t %>
+        <form class="inline" method="post" action="/libros/<%= libro._id %>/etiquetas/quitar">
+          <input type="hidden" name="etiqueta" value="<%= t %>"><button class="rojo" style="padding:0 6px">×</button>
+        </form>
+      </span>
+    <% }) %>
+  </p>
+  <form class="barra" method="post" action="/libros/<%= libro._id %>/etiquetas">
+    <input name="etiqueta" placeholder="Nueva etiqueta" required><button>Agregar etiqueta</button>
+  </form>
+  <button type="button" class="btn gris" id="ver-json">Ver documento en MongoDB</button> <a class="btn gris" href="/libros/<%= libro._id %>/editar">Editar</a> <a class="btn gris" href="/libros">Volver</a>
+</div>
+<dialog id="json-dialog" class="json-dialog"><div class="json-head"><h2>Documento original de MongoDB</h2><button type="button" class="gris" id="cerrar-json">Cerrar</button></div><p class="muted">Documento real almacenado, incluidos ObjectId, arrays y objetos embebidos.</p><pre id="json-contenido">Cargando documento…</pre><button type="button" id="copiar-json">Copiar JSON</button><span id="estado-copia" class="muted" aria-live="polite"></span></dialog>
+<h2>Últimos préstamos</h2>
+<table>
+<tr><th>Socio</th><th>Fecha</th><th>Estado</th></tr>
+<% prestamos.forEach(p => { %><tr><td><%= p.socio.nombre %></td><td><%= fmt(p.fecha_prestamo) %></td><td><%= p.estado %></td></tr><% }) %>
+<% if (!prestamos.length) { %><tr><td colspan="3">Este libro aún no se ha prestado</td></tr><% } %>
+</table>
+<script>
+(() => {
+ const dlg=document.getElementById('json-dialog'), pre=document.getElementById('json-contenido');
+ document.getElementById('ver-json').addEventListener('click', async()=>{
+   dlg.showModal(); pre.textContent='Cargando documento…';
+   try { const r=await fetch('/api/libros/<%= libro._id %>/documento',{headers:{Accept:'application/json'}}); const d=await r.json(); if(!r.ok) throw new Error(d.error||'No se pudo cargar'); pre.textContent=JSON.stringify(d,null,2); }
+   catch(e){pre.textContent='Error: '+e.message;}
+ });
+ document.getElementById('cerrar-json').addEventListener('click',()=>dlg.close());
+ document.getElementById('copiar-json').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(pre.textContent);document.getElementById('estado-copia').textContent='JSON copiado.';}catch(e){document.getElementById('estado-copia').textContent='No fue posible copiar automáticamente.';}});
+})();
+</script>
+<%- include('../partials/footer') %>

@@ -1,0 +1,58 @@
+<%- include('partials/header') %>
+<div class="admin-banner"><span>🛡️</span><div><h1>Panel de administración</h1><p>Control total del sistema · acceso exclusivo para administradores</p></div></div>
+<div class="admin-grid">
+  <aside class="admin-menu">
+    <a href="#resumen">📊 Resumen</a><a href="#usuarios">👥 Usuarios</a><a href="#avisos">📧 Avisos por correo</a><a href="#actividad">📝 Actividad</a>
+  </aside>
+  <div>
+    <section id="resumen" class="stats panel">
+      <div class="stat"><span>👥</span><b><%= usuarios.length %></b><small>Usuarios del sistema</small></div>
+      <div class="stat"><span>⚡</span><b><%= stats.hoy %></b><small>Acciones hoy</small></div>
+      <div class="stat"><span>📨</span><b><%= stats.avisos %></b><small>Avisos enviados</small></div>
+      <div class="stat <%= stats.vencidos ? 'alerta' : '' %>"><span>⏰</span><b><%= stats.vencidos %></b><small>Préstamos vencidos</small></div>
+    </section>
+
+    <section id="usuarios" class="panel"><h2>👥 Usuarios</h2>
+      <table><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Creado</th></tr>
+      <% usuarios.forEach(u => { %><tr><td><%= u.nombre %></td><td><%= u.email %></td><td><span class="pill <%= u.rol === 'admin' ? 'activo' : 'devuelto' %>"><%= u.rol %></span></td><td><%= fmt(u.creado) %></td></tr><% }) %></table>
+      <form class="campos" method="post" action="/admin/usuarios">
+        <h3>➕ Nuevo usuario</h3>
+        <label>Nombre</label><input name="nombre" autocomplete="off" required>
+        <label>Correo</label><input type="email" name="email" autocomplete="off" required>
+        <label>Contraseña (mínimo 8 caracteres)</label><input type="password" name="password" minlength="8" autocomplete="new-password" required>
+        <label>Rol</label><select name="rol"><option value="bibliotecario">bibliotecario</option><option value="admin">admin</option></select>
+        <p><button>Crear usuario</button></p>
+      </form>
+    </section>
+
+    <section id="avisos" class="panel"><h2>📧 Avisos por correo</h2>
+      <div class="card" style="text-align:center">
+        <p class="muted">Cada 6 horas el sistema avisa a los socios cuyo préstamo vence en los próximos días (una vez por préstamo).</p>
+        <form method="post" action="/admin/avisos"><button>📧 Enviar avisos ahora</button></form>
+      </div>
+    </section>
+
+    <section id="actividad" class="panel"><h2>📝 Registro de actividad</h2>
+      <table><tr><th>Fecha</th><th>Usuario</th><th>Rol</th><th>Acción</th></tr>
+      <% actividad.forEach(a => { %><tr><td><%= new Date(a.fecha).toLocaleString('es-CO') %></td><td><%= a.usuario %></td><td><%= a.rol %></td><td><%= a.accion %></td></tr><% }) %>
+      <% if (!actividad.length) { %><tr><td colspan="4">Aún no hay actividad registrada</td></tr><% } %></table>
+    </section>
+  </div>
+</div>
+<script>
+(function(){
+  var links=document.querySelectorAll('.admin-menu a'), panels=document.querySelectorAll('.admin-grid .panel');
+  function show(id){
+    if(![].some.call(panels,function(p){return p.id===id})) id='resumen';
+    panels.forEach(function(p){p.hidden=p.id!==id});
+    links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+id)});
+    try{sessionStorage.setItem('adminTab',id)}catch(e){}
+  }
+  links.forEach(function(a){a.addEventListener('click',function(e){
+    e.preventDefault(); var id=a.getAttribute('href').slice(1); history.replaceState(null,'','#'+id); show(id);
+  })});
+  var saved; try{saved=sessionStorage.getItem('adminTab')}catch(e){}
+  show(location.hash.slice(1)||saved||'resumen');
+})();
+</script>
+<%- include('partials/footer') %>

@@ -1,0 +1,19 @@
+<script>
+(() => {
+  document.querySelectorAll('form[action$="/eliminar"]').forEach(f => f.addEventListener('submit', e => { if (!confirm('¿Seguro que deseas eliminar este registro? Esta acción no se puede deshacer.')) e.preventDefault(); }));
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  addEventListener('pointermove', e => { document.body.style.setProperty('--mx', e.clientX + 'px'); document.body.style.setProperty('--my', e.clientY + 'px'); });
+  document.querySelectorAll('table tr').forEach((r, i) => r.style.animationDelay = Math.min(i, 14) * 35 + 'ms');
+  document.querySelectorAll('.stat b').forEach(el => {
+    const txt = el.textContent, n = parseInt(txt.replace(/\D/g, ''), 10);
+    if (isNaN(n)) return;
+    const pre = txt.startsWith('$') ? '$' : '', t0 = performance.now();
+    const paso = t => { const k = Math.min(1, (t - t0) / 1100); el.textContent = pre + Math.round(n * (1 - Math.pow(1 - k, 3))).toLocaleString('es-CO'); if (k < 1) requestAnimationFrame(paso); };
+    requestAnimationFrame(paso);
+  });
+  document.querySelectorAll('.stat, .charts .card').forEach(c => {
+    c.addEventListener('pointermove', e => { const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; c.style.transform = `perspective(700px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateY(-4px)`; });
+    c.addEventListener('pointerleave', () => { c.style.transform = ''; });
+  });
+})();
+</script>

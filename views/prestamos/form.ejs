@@ -1,0 +1,42 @@
+<%- include('../partials/header') %>
+<h1>Nuevo préstamo</h1>
+<% errores.forEach(e => { %><div class="err"><%= e %></div><% }) %>
+<form class="campos" method="post" action="/prestamos" id="f">
+  <label>Socio</label>
+  <div class="ac"><input id="socio_q" autocomplete="off" placeholder="Escribe el nombre o el documento…"><input type="hidden" name="socio_id" id="socio_id"><div class="ac-lista" id="socio_l"></div></div>
+  <label>Libro (solo con copias disponibles)</label>
+  <div class="ac"><input id="libro_q" autocomplete="off" placeholder="Escribe el título, autor o ISBN…"><input type="hidden" name="libro_id" id="libro_id"><div class="ac-lista" id="libro_l"></div></div>
+  <label>Días de préstamo (1–30)</label><input type="number" name="dias" value="15" min="1" max="30">
+  <div class="aviso" id="msg" hidden></div>
+  <p><button>Registrar</button> <a class="btn gris" href="/prestamos">Cancelar</a></p>
+</form>
+<script>
+const $ = id => document.getElementById(id);
+function ac(q, h, l, url, pintar) {
+  let t;
+  q.addEventListener('input', () => {
+    h.value = ''; clearTimeout(t);
+    if (q.value.trim().length < 2) { l.replaceChildren(); return; }
+    t = setTimeout(async () => {
+      const r = await (await fetch(url + encodeURIComponent(q.value.trim()))).json();
+      l.replaceChildren();
+      if (!r.length) { const d = document.createElement('div'); d.className = 'ac-item'; d.textContent = 'Sin resultados'; l.append(d); return; }
+      r.forEach(x => {
+        const [a, b] = pintar(x), d = document.createElement('div'), s1 = document.createElement('span'), s2 = document.createElement('span');
+        d.className = 'ac-item'; s1.textContent = a; s2.textContent = b; s2.className = 'muted'; d.append(s1, s2);
+        d.onmousedown = e => { e.preventDefault(); q.value = a; h.value = x._id; l.replaceChildren(); };
+        l.append(d);
+      });
+    }, 200);
+  });
+  q.addEventListener('blur', () => setTimeout(() => l.replaceChildren(), 150));
+}
+ac($('socio_q'), $('socio_id'), $('socio_l'), '/api/socios?q=', x => [x.nombre, x.documento]);
+ac($('libro_q'), $('libro_id'), $('libro_l'), '/api/libros?disp=1&q=', x => [x.titulo, x.autores.join(', ') + ' · ' + x.copias_disponibles + ' disp.']);
+$('f').addEventListener('submit', e => {
+  if (!$('socio_id').value || !$('libro_id').value) {
+    e.preventDefault(); $('msg').hidden = false; $('msg').textContent = 'Elige un socio y un libro de la lista de sugerencias.';
+  }
+});
+</script>
+<%- include('../partials/footer') %>

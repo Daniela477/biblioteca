@@ -1,0 +1,28 @@
+<%- include('../partials/header') %>
+<h1>Libros</h1>
+<% const th = (c, t) => { const u = new URLSearchParams({ q, categoria, orden: c, dir: (orden === c && dir === 'asc') ? 'desc' : 'asc' }); return `<th><a class="sort" href="/libros?${u}">${t}${orden === c ? (dir === 'asc' ? ' ▲' : ' ▼') : ''}</a></th>`; }; %>
+<form class="barra" method="get" action="/libros">
+  <input name="q" placeholder="Título o autor" value="<%= q %>">
+  <select name="categoria"><option value="">Todas las categorías</option>
+    <% categorias.forEach(c => { %><option <%= c === categoria ? 'selected' : '' %>><%= c %></option><% }) %>
+  </select>
+  <button>Buscar</button><a class="btn gris" href="/libros">Limpiar</a><a class="btn" href="/libros/nuevo">+ Nuevo libro</a>
+  <a class="btn gris" href="/libros/exportar.csv?<%= new URLSearchParams({ q, categoria }) %>">⬇ Excel (CSV)</a>
+</form>
+<table>
+<tr><%- th('titulo', 'Título') %><th>Autores</th><%- th('categoria', 'Categoría') %><%- th('copias', 'Disp.') %><th></th></tr>
+<% libros.forEach(l => { const hue = [...l.titulo].reduce((a, c) => a + c.charCodeAt(0), 0) % 360; %>
+<tr>
+  <td><% if (l.portada) { %><img class="cover" src="<%= l.portada %>" alt="" loading="lazy"><% } else { %><span class="cover" style="background:hsl(<%= hue %> 65% 45%)"><%= l.titulo[0] %></span><% } %><a href="/libros/<%= l._id %>"><%= l.titulo %></a></td>
+  <td><%= l.autores.join(', ') %></td><td><%= l.categoria %></td>
+  <td><%= l.copias_disponibles %>/<%= l.copias_total %></td>
+  <td>
+    <a class="btn gris" href="/libros/<%= l._id %>/editar">Editar</a>
+    <% if (usuario.rol === 'admin') { %><form class="inline" method="post" action="/libros/<%= l._id %>/eliminar"><button class="rojo">Eliminar</button></form><% } %>
+  </td>
+</tr>
+<% }) %>
+<% if (!libros.length) { %><tr><td colspan="5">Sin resultados</td></tr><% } %>
+</table>
+<%- include('../partials/pager', { pg }) %>
+<%- include('../partials/footer') %>

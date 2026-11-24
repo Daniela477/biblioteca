@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<h1>Socios</h1>
+<form class="barra" method="get" action="/socios">
+  <input name="q" placeholder="Nombre o documento" value="<%= q %>"><button>Buscar</button>
+  <a class="btn gris" href="/socios">Limpiar</a><a class="btn" href="/socios/nuevo">+ Nuevo socio</a>
+</form>
+<table>
+<tr><th>Nombre</th><th>Documento</th><th>Correo</th><th>Tipo</th><th>Ciudad</th><th></th></tr>
+<% socios.forEach(s => { %>
+<tr><td><a href="/socios/<%= s._id %>"><%= s.nombre %></a></td><td><%= s.documento %></td><td><%= s.email %></td><td><%= s.tipo %></td><td><%= s.direccion.ciudad %></td>
+<td><a class="btn gris" href="/socios/<%= s._id %>/editar">Editar</a>
+<% if (usuario.rol === 'admin') { %><form class="inline" method="post" action="/socios/<%= s._id %>/eliminar"><button class="rojo">Eliminar</button></form><% } %></td></tr>
+<% }) %>
+<% if (!socios.length) { %><tr><td colspan="6">Sin resultados</td></tr><% } %>
+</table>
+<%- include('../partials/pager', { pg }) %>
+<%- include('../partials/footer') %>

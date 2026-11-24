@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<h1>Préstamos</h1>
+<form class="barra" method="get" action="/prestamos">
+  <select name="estado"><option value="">Todos</option>
+    <% [['activo','Activos'],['vencido','Vencidos'],['devuelto','Devueltos']].forEach(o => { %><option value="<%= o[0] %>" <%= estado === o[0] ? 'selected' : '' %>><%= o[1] %></option><% }) %></select>
+  <button>Filtrar</button><a class="btn" href="/prestamos/nuevo">+ Nuevo préstamo</a><a class="btn gris" href="/prestamos/exportar.csv">⬇ Excel (CSV)</a>
+</form>
+<table>
+<tr><th>Libro</th><th>Socio</th><th>Préstamo</th><th>Límite</th><th>Estado</th><th>Renov.</th><th>Multa</th><th></th></tr>
+<% prestamos.forEach(p => { const atraso = p.estado === 'activo' ? Math.ceil((Date.now() - new Date(p.fecha_limite)) / 864e5) : 0; %>
+<tr class="<%= atraso > 0 ? 'venc' : '' %>"><td><%= p.libro.titulo %></td><td><%= p.socio.nombre %></td><td><%= fmt(p.fecha_prestamo) %></td><td><%= fmt(p.fecha_limite) %></td>
+<td><% if (atraso > 0) { %><span class="pill vencido">vencido · <%= atraso %> d</span><% } else { %><span class="pill <%= p.estado %>"><%= p.estado %></span><% } %></td>
+<td><%= (p.renovaciones || []).length %>/<%= maxRenov %></td><td>$<%= p.multa || 0 %></td>
+<td>
+<% if (p.estado === 'activo') { %>
+  <form class="inline" method="post" action="/prestamos/<%= p._id %>/devolver"><button>Devolver</button></form>
+  <form class="inline" method="post" action="/prestamos/<%= p._id %>/renovar"><button class="gris">Renovar</button></form>
+<% } else if (usuario.rol === 'admin') { %>
+  <form class="inline" method="post" action="/prestamos/<%= p._id %>/eliminar"><button class="rojo">Eliminar</button></form>
+<% } %>
+</td></tr>
+<% }) %>
+<% if (!prestamos.length) { %><tr><td colspan="8">Sin resultados</td></tr><% } %>
+</table>
+<%- include('../partials/pager', { pg }) %>
+<%- include('../partials/footer') %>
